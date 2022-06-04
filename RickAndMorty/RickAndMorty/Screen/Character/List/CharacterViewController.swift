@@ -13,6 +13,7 @@ class CharacterViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView! {
         didSet {
             tableView.dataSource = self
+            tableView.delegate = self
             tableView.rowHeight = 120
         }
     }
@@ -33,11 +34,9 @@ class CharacterViewController: UIViewController {
     // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         characterService.getAllCharacters {
             guard let characters = $0 else { return }
             self.characters = characters
-            
         }
     }
 }
@@ -58,5 +57,14 @@ extension CharacterViewController: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
 
-
+extension CharacterViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard indexPath.row == characters.count - 1 else { return }
+        characterService.getCharactersFromNextPage {
+            guard let characters = $0 else { return }
+            self.characters.append(contentsOf: characters)
+        }
+    }
+}
