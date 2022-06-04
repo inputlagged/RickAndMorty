@@ -21,14 +21,24 @@ class CharacterViewController: UIViewController {
     private let characterService = CharacterService()
     
     private let cellIdentifier = "CharacterCell"
-    private var characters = [Character]()
+    private var characters = [Character]() {
+        didSet {
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+    }
     
     
     // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        characterService.getAllCharacters {
+            guard let characters = $0 else { return }
+            self.characters = characters
+            
+        }
     }
 }
 
@@ -40,6 +50,9 @@ extension CharacterViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? CharacterTableViewCell else { return UITableViewCell() }
+        
+        let currentCharacter = characters[indexPath.row]
+        cell.setup(character: currentCharacter)
         
         return cell
     }
